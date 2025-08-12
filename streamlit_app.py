@@ -1,6 +1,13 @@
 import streamlit as st
+from pages import analyse, tables
 
-st.title("🎈 My new app - test")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
+st.set_page_config(page_title="Vega Data Viewer", page_icon="📊")
+st.title("📊 Vega's Data exploration")
+
+tab1, tab2 = st.tabs(["Analyse", "Table Reference"])
+
+with tab1:
+    analyse.render()
+
+with tab2:
+    tables.render()

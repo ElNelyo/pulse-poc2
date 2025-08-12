@@ -12,7 +12,18 @@ A simple Streamlit app template for you to modify!
    $ pip install -r requirements.txt
    ```
 
-2. Run the app
+2. Set your OpenAI API key (recommended: use a local `.env`)
+
+   - Windows PowerShell
+     ```
+     $ setx OPENAI_API_KEY "sk-..."
+     ```
+   - Or create a `.env` file at the project root:
+     ```
+     OPENAI_API_KEY=sk-...
+     ```
+
+3. Run the app
 
    ```
    $ streamlit run streamlit_app.py
