@@ -21,7 +21,7 @@ def render():
             try:
                 df = pd.read_excel(path)
                 st.write(f"### {file}")
-                st.dataframe(df.head(10))
+                st.dataframe(df.head(15))
             except Exception as e:
                 st.error(f"Erreur lors du chargement de {file}: {e}")
         else:
