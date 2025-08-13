@@ -26,7 +26,7 @@ A simple Streamlit app template for you to modify!
 3. Run the app
 
    ```
-   $ python3 -m streamlit run streamlit_app.py
+   $ python3 -m streamlit run streamlit_app.py --server.fileWatcherType=none
    ```
 
 Voici le brief rapide du projet:
