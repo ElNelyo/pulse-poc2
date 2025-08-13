@@ -8,11 +8,10 @@ import unicodedata
 from pathlib import Path
 from openai import OpenAI
 from dotenv import load_dotenv
+from utils.ai_checks import analyze_contract
+from fpdf import FPDF
 load_dotenv()
 import os
-
-api_key = os.environ.get("OPENAI_API_KEY")
-
 
 reader = easyocr.Reader(['fr'], gpu=False) 
 
@@ -81,7 +80,6 @@ def extract_header_text(text: str, max_words: int = 50) -> str:
 def parse_client_info_with_openai(header_text: str) -> dict:
     """Utilise OpenAI pour extraire les informations du client depuis l'en-tête"""
     try:
-        print(os.environ.get("OPENAI_API_KEY"))
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         
         prompt = f"""
@@ -349,4 +347,123 @@ def render():
                                      else:
                                          st.success(f"{len(modelli_match)} model(s) found for codes {list(map(int, upv_mod_codes))} for customer {cli_cod}")
                                      st.dataframe(modelli_match)
- 
+
+                                     columns_clienti = [
+                                        "CLI_COD",           # code client
+                                        "CLI_NOME",          # nom client
+                                        "CLI_NOME2",         # nom complet
+                                        "CLI_IND",           # adresse
+                                        "CLI_CAP",           # code postal
+                                        "CLI_CIT",           # ville
+                                        "CLI_PROV",          # province
+                                        "CLI_TEL",           # téléphone
+                                        "CLI_EMAIL",         # email
+                                        "CLI_VEND",          # vendeur principal
+                                        "CLI_VEN2",          # deuxième vendeur
+                                        "CLI_STAT",          # pays
+                                        "CLI_DCON",          # date de création
+                                        "CLI_DRIT",          # date dernière modification
+                                        "CLI_DING",          # date d’activation
+                                        "CLI_STATOCONTRATTO",# état du contrat
+                                        "CLI_MODALITA_SPEDIZIONE", # mode livraison
+                                        "CLI_LATITWGSDEC",   # latitude
+                                        "CLI_LONGITWGSDEC"   # longitude
+                                     ]
+
+                                     columns_accounts = [
+                                        "CTB_COD",
+                                        "CTB_RAG2",
+                                        "CTB_CF",
+                                        "CTB_PIVA",
+                                        "CTB_IND",
+                                        "CTB_CAP",
+                                        "CTB_CIT",
+                                        "CTB_PROV",
+                                        "CTB_STAT",
+                                        "CTB_TEL",
+                                        "CTB_EMAIL",
+                                        "CTB_DESC",
+                                        "CTB_DVAR"
+                                    ]
+
+                                     columns_contracts = [
+                                        "CNTR_CLIENTE",
+                                        "CNTR_NUMEROCONTRATTO",
+                                        "CNTR_PV",
+                                        "CNTR_TIPO",
+                                        "CNTR_DATASTIPULACONTRATTO",
+                                        "CNTR_DCON",
+                                        "CNTR_DURATACTR",
+                                        "CNTR_DURATATACITORINNOVO",
+                                        "CNTR_PERIODOPERDISDETTA",
+                                        "CNTR_STATOCONTRATTO",
+                                        "CNTR_WORK_CURRENCY",
+                                        "CNTR_MAIN_CURRENCY",
+                                        "CNTR_SEDELEGALE",
+                                        "CNTR_RIFCOMMAZIENDA",
+                                        "CNTR_IMPORTO_TOTALE_OMAGGI",
+                                        "CNTR_IMPORTO_TOTALE_OMAGGI_RIC"
+                                    ]
+                                     columns_unopv = [
+                                        "UPV_COD",                  # Code point de vente
+                                        "UPV_DES1",                 # Description principale
+                                        "UPV_DES2",                 # Description secondaire
+                                        "UPV_CLI",                  # Code client associé
+                                        "UPV_PROV",                 # Province
+                                        "UPV_TEL",                  # Téléphone
+                                        "UPV_EMAIL",                # Email
+                                        "UPV_VEND",                 # Vendeur
+                                        "UPV_DVAR",                 # Date dernière variation
+                                        "UPV_MOD",                  # Modèle
+                                        "UPV_NOTE",                 # Notes
+                                        "UPV_STATOCONTRATTO",       # Statut du contrat
+                                        "UPV_DATASTIPULACONTRATTO", # Date de début du contrat
+                                        "UPV_DCON",                 # Date de fin du contrat
+                                        "UPV_DURATACTR"             # Durée du contrat
+                                    ]
+                                     columns_modelli = [
+                                        "MOD_COD",                   # Code modèle
+                                        "MOD_DESC",                  # Description modèle
+                                        "MOD_PRODOTTO",              # Référence produit
+                                        "MOD_ID_PRODUTTORE",         # Fabricant
+                                        "MOD_TMEDRIP",               # Temps moyen d’aspiration
+                                        "MOD_SOGPERCMIN",            # Seuil minimum
+                                        "MOD_SOGPERCMAX",            # Seuil maximum
+                                        "MOD_PERCCARICOIDEALE",      # Pourcentage de charge idéal
+                                        "MOD_COSTOSTDDANUOVO",       # Coût standard neuf
+                                        "MOD_COSTOUNITARDVISITA",    # Coût unitaire visite
+                                        "MOD_QGIOACCESSORI",         # Quantité accessoires
+                                        "MOD_DEFOFM_FUNZIONAMENTO",  # Mode de fonctionnement par défaut
+                                        "MOD_DEFOFM_FAT",            # Type FAT
+                                        "MOD_DEFOFM_INCT",           # Canal d’installation
+                                        "MOD_WORK_CURRENCY",         # Devise
+                                        "MOD_MAIN_CURRENCY"          # Devise principale
+                                    ]
+
+
+                                     contracts_match_simplified = contrats_match[columns_contracts].copy()
+                                     accounts_match_simplified = accounts_customer[columns_accounts].copy()
+                                     clienti_match_simplified = result_rows[columns_clienti].copy()
+                                     unopv_match_simplified = unopv_match[columns_unopv].copy()
+                                     modelli_match_simplified = modelli_match[columns_modelli].copy()
+
+                                     report_data = {
+                                        "client_info": info,
+                                        "clienti_match": clienti_match_simplified.to_dict(orient="records"),
+                                        "accounts_match": accounts_match_simplified.to_dict(orient="records"), 
+                                        "contracts_match": contracts_match_simplified.to_dict(orient="records"),
+                                        "unopv_match": unopv_match_simplified.to_dict(orient="records") if not unopv_match.empty else [],
+                                       "modelli_match": modelli_match_simplified.to_dict(orient="records") if not modelli_match.empty else []
+                                    }
+                                     if "report" not in st.session_state:
+                                        st.session_state.report = ""
+
+                                     with st.expander("JSON Summary"):
+                                        st.json(report_data)
+                                     if st.button("Generate Report"):
+                                        st.session_state.report = analyze_contract(report_data, text)
+                                        st.success("Report generated and ready to copy.")
+
+                                     if st.session_state.report:
+                                        st.subheader("AI Report (copyable)")
+                                        st.text_area("Copy the text below", st.session_state.report, height=400)

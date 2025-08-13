@@ -1,6 +1,7 @@
 import fitz
 from pathlib import Path
 
+
 def extract_text(uploaded_pdf):
     pdf_path = Path("temp_uploaded.pdf")
     with open(pdf_path, "wb") as f:
