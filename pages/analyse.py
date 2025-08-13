@@ -9,7 +9,6 @@ from pathlib import Path
 from openai import OpenAI
 from dotenv import load_dotenv
 from utils.ai_checks import analyze_contract
-from fpdf import FPDF
 load_dotenv()
 import os
 
@@ -39,9 +38,7 @@ def _looks_like_person(name_line: str) -> bool:
     tokens = [t for t in re.split(r"[\s\-]+", name_line.strip()) if t]
     if len(tokens) < 2 or len(tokens) > 4:
         return False
-    # Heuristique simple: 2-3 mots qui commencent par une majuscule (ou majuscule accentuée)
     upper_initial = all(bool(re.match(r"^[A-ZÀ-ÝÄÖÜÈÉÊËÇÎÏÔÛŸ][a-zà-ÿ'\-]*$", t)) for t in tokens)
-    # Éviter les suffixes d'entreprises
     company_suffix = any(suf in name_line for suf in [
         " SA", " AG", " GmbH", " Srl", " SRL", " SAS", " SPA", " Inc", " SARL", " SNC", " Ltd"
     ])
@@ -111,7 +108,7 @@ def parse_client_info_with_openai(header_text: str) -> dict:
         """
         
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4.1",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1
         )
@@ -125,7 +122,6 @@ def parse_client_info_with_openai(header_text: str) -> dict:
         return parse_client_info_fallback(header_text)
 
 def parse_client_info_fallback(text: str) -> dict:
-    """Méthode de fallback si OpenAI échoue"""
     lines = [re.sub(r"\s+", " ", ln).strip() for ln in text.splitlines()]
     lines = [ln for ln in lines if ln]
 
@@ -188,7 +184,6 @@ def parse_client_info_fallback(text: str) -> dict:
     }
 
 def parse_client_info(text: str) -> dict:
-    """Fonction principale qui utilise OpenAI avec fallback"""
     header_text = extract_header_text(text, max_words=50)
     return parse_client_info_with_openai(header_text)
 
@@ -223,7 +218,6 @@ def render():
         with st.expander("Détails"):
             st.json(info)
 
-        # Recherche dans clienti.xlsx
         st.subheader("Search in clienti.xlsx")
         if not clienti_path.exists():
             st.warning("Le fichier `documents/table/clienti.xlsx` est introuvable.")
@@ -298,7 +292,6 @@ def render():
                      st.success(f"{len(contrats_match)} contract(s) found for accounts of customer {cli_cod}")
                      st.dataframe(contrats_match)
                      
-                     # Recherche dans unopv.xlsx pour les modèles
                      st.subheader("Search in unopv.xlsx")
                      if not unopv_path.exists():
                          st.warning("Le fichier `unopv.xlsx` est introuvable.")
@@ -313,7 +306,6 @@ def render():
                          st.success(f"{len(unopv_match)} unopv(s) found for customer {cli_cod}")
                          st.dataframe(unopv_match)
                          
-                         # Recherche dans modelli.xlsx pour les détails des modèles
                          st.subheader("Search in modelli.xlsx")
                          if not modelli_path.exists():
                              st.warning("Le fichier `modelli.xlsx` est introuvable.")
@@ -321,7 +313,6 @@ def render():
                          
                          df_modelli = pd.read_excel(modelli_path)
                          
-                         # Vérifier la présence des colonnes nécessaires
                          if "UPV_MOD" not in unopv_match.columns:
                              st.warning("Colonne UPV_MOD absente dans unopv.xlsx")
                          elif "MOD_COD" not in df_modelli.columns:

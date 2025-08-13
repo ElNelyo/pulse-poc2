@@ -1,8 +1,4 @@
-# 🎈 Blank app template
-
-A simple Streamlit app template for you to modify!
-
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+# Vega Data Viewer
 
 ### How to run it on your own machine
 
@@ -28,6 +24,8 @@ A simple Streamlit app template for you to modify!
    ```
    $ python3 -m streamlit run streamlit_app.py --server.fileWatcherType=none
    ```
+
+4. Use file "1_FILE_TESTER.pdf" to test the app
 
 Voici le brief rapide du projet:
 https://pulsepartners-usecases.notion.site/?pvs=73
